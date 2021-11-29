@@ -1,0 +1,200 @@
+---
+output:
+  pdf_document: default
+header-includes:
+  - \usepackage{color}
+---
+----
+ Summer 2021: Introduction to Data Science
+---
+
+```{r}
+
+```
+
+
+#\textcolor{blue}{Lab 1: Exploratory Data Analysis on the Diamonds data set}
+####Author:_____Ian Davis_____
+
+#### \textcolor{red}{Total Grade for Lab 1: /25} 
+#### \textcolor{red}{Comments (optional)} 
+
+By now, you have finished or are in the middle of working on the Exploratory Data Analysis sections of the DataCamp course, Introduction to R. This lab helps you to practice what you have learned to our Class Survey dataset. 
+
+
+## \textcolor{blue}{Template for lab report}
+\textbf{Instructions:} This is the template you will use to type up your responses to the exercises. To produce a document that you can print out and turn in just click on Knit PDF above. All you need to do to complete the lab is to type up your BRIEF answers and the R code (when necessary) in the spaces provided below. If you want to find out more about the markdown language click on the MD icon.
+
+It is strongly recommended that you knit your document regularly (minimally after answering each exercise) for two reasons. 
+
+  1. Ensure that there are no errors in your code that would prevent the document from knitting.
+  2. View the instructions and your answers in a more legible, attractive format.
+
+
+## \textcolor{blue}{Load Diamonds data:}
+
+Unlike prior labs, the dataset for this lab is pre-installed via the ggplot2 package (make sure ggplot2 is loaded and the code to load ggplot2 is included in this document *before* you call the dataset \textcolor{red}{diamonds}). The following code is not required to complete this lab, but will help you examine your data more readily. 
+
+```{r}
+library(ggplot2)
+names(diamonds) #note that diamonds is already loaded even though it doesn't appear in the environment at first
+diamonds <- diamonds # this command makes your diamonds dataset appear in your environment (top right)
+```
+
+
+-----
+\textcolor{blue}{Beginning of Lab 2 Excercises:}
+---
+
+
+
+#### \textbf{\textcolor{blue}{Exercise 1: }} 
+
+Using the data set \textit{\textcolor{red}{diamonds}} from the package \textcolor{blue}{ggplot2} answer the following questions:
+
+While we do not attempt to do any inferential statistics while working on exploratory data analysis, we make use of some descriptive statistics. Find the following:
+
+(a)	Find the \textit{mean, median,} and \textit{mode} for the \textit{carat} variable in the dataset \textit{\textcolor{teal}{diamonds}}.
+(b)	Find the \textit{10th, 25th, 50th, 75th and 90th point percentiles} for the variable \textit{price} in the dataset \textit{\textcolor{teal}{diamonds}}
+
+
+
+#### \textcolor{blue}{Hint: Refer to the first unit labs if you need to remind yourself of how to construct a vector and populate it with data.I believe that this was discussed in Lab 1 in the \textit{Basic Programming} unit. Also, feel free to Google anything, such as "R mode" to find more information about how to code.}
+
+
+```{r, eval = TRUE}
+##    Insert the correct commands here (they should not be preceded by a hashtag)
+##    Exception: Only put a hashtag before the command if it produces an "Error" output.
+##    This will ensure that the document knits properly even though the command does not.
+##    The graders will still be able to see that you made progress on this 
+
+library(dplyr)
+
+
+Modes <- function(x) {
+  ux <- unique(x)
+  tab <- tabulate(match(x, ux))
+  ux[tab == max(tab)]
+}
+#Carat descriptive statistics
+carat_vector <- diamonds$carat
+summary(carat_vector)
+Modes(carat_vector)
+
+#Price percentiles
+price_vector <- diamonds$price
+df_price_percentile <- as.data.frame(quantile(price_vector, 0.1))
+names(df_price_percentile) <- "Price"
+df_price_percentile <- df_price_percentile %>% add_row(Price = (quantile(price_vector, 0.25))) %>%
+                                                add_row(Price = (quantile(price_vector, 0.5))) %>%
+                                                add_row(Price = (quantile(price_vector, 0.75))) %>%
+                                                add_row(Price = (quantile(price_vector, 0.9)))
+rownames(df_price_percentile)[rownames(df_price_percentile) == "...2"] = "25%"  
+rownames(df_price_percentile)[rownames(df_price_percentile) == "...3"] = "50%"  
+rownames(df_price_percentile)[rownames(df_price_percentile) == "...4"] = "75%"  
+rownames(df_price_percentile)[rownames(df_price_percentile) == "...5"] = "90%"
+
+df_price_percentile
+```
+
+#### \textcolor{blue}{Answer 1: } (Make sure that the results of the commands you entered above are clear and readable. If you suspect that they are not possible to read then copy them here in an organzied manner. Also, add any comments you want/need to elaborate any aspect of the results above)
+
+
+
+
+####\textcolor{red}{Grade for Exercise 1: /10} 
+#### \textcolor{red}{Comments:} 
+
+
+
+
+
+
+
+#### \textbf{\textcolor{blue}{Exercise 2: }}
+
+Construct a plot that shows the frequency distribution of the diamonds in terms of their \textit{\textcolor{teal}{carat}} values and show that the plot agrees with your findings from Question 1 on this assignment.
+
+####\textcolor{blue}{Make sure to provide the code you used for the visualization and the graphs produced in the following code chunck}
+
+
+```{r}
+##    Insert the correct commands here (they should not be preceded by a hashtag)
+##    Exception: Only put a hashtag before the command if it produces an "Error" output.
+##    This will ensure that the document knits properly even though the command does not.
+##    The graders will still be able to see that you made progress on this question.
+
+plot_carat <- ggplot(mapping = aes(x = carat_vector)) +
+              geom_histogram(binwidth = 0.1)
+plot_carat
+```
+
+
+
+#### \textcolor{blue}{Answer 2: } (Provide your answer here for your observations regarding the distributions discussed above)
+*Note* The answer is provided below as a freebie (due to an editing error while creating this document.) Make sure you have code that matches the description below, and that you understand what the text below means.
+
+
+Given that the \textit{mean} value for the variable \textit{\textcolor{teal}{carat}} is 0.798 carat, the \textit{median} is 0.7 carat, and the \textit{mode} is 0.3 carat, we can see clearly that the histograms above exhibit a distribution that is right skewed in agreement with our findings from question 1
+
+
+
+#### \textcolor{red}{Grade for Exercise 2: /5} 
+#### \textcolor{red}{Comments:}
+
+
+
+
+
+
+#### \textbf{\textcolor{blue}{Exercise 3: }}
+
+How many diamonds have a \textit{\textcolor{teal}{carat}} value between 3 and 4? What is their price range? And find the 10th, 25th, 50th, 75th, and 90th percentiles. (Hint: use the course materials and/or Google "R percentiles").
+
+
+####\textcolor{blue}{Make sure to provide the code you used for answering the question in the following code chunck}
+
+
+```{r echo = T, results= 'hide'}
+##    Insert the correct commands here (they should not be preceded by a hashtag)
+##    Exception: Only put a hashtag before the command if it produces an "Error" output.
+##    This will ensure that the document knits properly even though the command does not.
+##    The graders will still be able to see that you made progress on this question.
+df_3to4 <- diamonds %>% filter(carat > 3 & carat < 4)
+str(df_3to4)
+summary(df_3to4$price)
+#18710 - 8040 = 10670
+price3to4_vector <- df_3to4$price
+df_price_percentile3to4 <- as.data.frame(quantile(price3to4_vector, 0.1))
+names(df_price_percentile3to4) <- "Price"
+df_price_percentile3to4 <- df_price_percentile3to4 %>% add_row(Price = (quantile(price3to4_vector, 0.25))) %>%
+                                                add_row(Price = (quantile(price3to4_vector, 0.5))) %>%
+                                                add_row(Price = (quantile(price3to4_vector, 0.75))) %>%
+                                                add_row(Price = (quantile(price3to4_vector, 0.9)))
+rownames(df_price_percentile3to4)[rownames(df_price_percentile3to4) == "...2"] = "25%"  
+rownames(df_price_percentile3to4)[rownames(df_price_percentile3to4) == "...3"] = "50%"  
+rownames(df_price_percentile3to4)[rownames(df_price_percentile3to4) == "...4"] = "75%"  
+rownames(df_price_percentile3to4)[rownames(df_price_percentile3to4) == "...5"] = "90%"
+
+df_price_percentile3to4
+```
+
+
+
+#### \textcolor{blue}{Answer 3: } (Provide your answer here if there is any problem with readability of the answers in the above code chunk)
+
+There are 26 diamonds with carat values between 3 and 4. Their prices range from $8,040 to $18,710 (a $10,670 spread). The price percentiles are visible above.
+
+
+
+#### \textcolor{red}{Grade for Exercise 3: /10} 
+#### \textcolor{red}{Comments:}
+
+
+
+
+
+
+
+
+

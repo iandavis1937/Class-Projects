@@ -1,0 +1,249 @@
+---
+output:
+  pdf_document: default
+header-includes:
+  - \usepackage{color}
+---
+----
+ Summer 2021: Introduction to Data Science
+---
+
+```{r, echo = F, results = 'hide', message=F, warning = F}
+library(knitr)  
+```
+
+## \textcolor{blue}{Unit 2 Lab 1: Introduction to Basics and Vectors}
+#### Author:__Ian Davis___
+
+#### \textcolor{red}{Total Grade for Lab 1: /25} 
+#### \textcolor{red}{Comments (optional)} 
+
+## \textcolor{blue}{Introduction}
+By now, you have finished Intro to Basics and Vectors sections of the DataCamp course, Introduction to R. This lab helps you to practice what you have learned to our Class Survey dataset. You will gain insight into types of variables in the survey, and working with vectors.
+
+## \textcolor{blue}{Template for lab report}
+\textbf{Instructions:} This is the template you will use to type up your responses to the exercises. To produce a document that you can print out and turn in just click on Knit PDF above. All you need to do to complete the lab is to type up your BRIEF answers and the R code (when necessary) in the spaces provided below. 
+
+It is strongly recommended that you knit your document regularly (minimally after answering each exercise) for two reasons. 
+
+  1. Ensure that there are no errors in your code that would prevent the document from knitting.
+  2. View the instructions and your answers in a more legible, attractive format.
+
+## \textcolor{blue}{Load Class Survey data:}
+
+First, download the Class Survey dataset onto your computer, and save it to your folder named Unit2_BasicCodingDataTransformation (you will need to create it first by clicking New Folder). Note that this document, lab_1_yourName.Rmd, is also saved to Unit2_BasicCodingDataTransformation. This is important; the computer won't know where to find the dataset unless it is saved to the same folder as the .Rmd file.
+
+Second, we load the dataset into the R workspace. After launching RStudio, enter the following command, either by 
+
+  1. Placing your cursor on line 42 and hitting (PC) Ctrl+Enter OR (Mac) Cmd+Enter
+  2. Clicking the rightward facing little green arrow.
+
+```{r}
+ClassSurveyData <- read.csv("ClassSurvey-2.csv", header = TRUE)
+```
+
+The dataset \textcolor{teal}{ClassSurveyData} that shows up in your workspace is a \textit{data matrix}, with each row representing an \textit{observation} and each column representing a \textit{variable}. R calls this data format a \textit{data frame}, which is a term that will be used throughout the labs.
+
+To view the names of the variables, type the command
+
+```{r, eval=TRUE}
+#Any text BOTH preceded by a hashtag AND within the ```{r} ``` code chunk is a comment. 
+#R indicates a comment by turning the text green in the editor, and brown in the knitted
+#document. 
+#Comments are not treated as a command to be interpreted by the computer.
+#They normally (briefly!) describe the purpose of your command or chunk in plain English.
+#However, for this class, they will have a different goal, as the text above and below 
+#each chunk should sufficiently describe the chunk's contents.
+#For this class, comments will be used to indicate where your code should go, or to give
+#hints for what the code should look like.
+names(ClassSurveyData)
+```
+
+This returns the names of all variables in the dataset. Each one of these variables corresponds to a question that was asked in the survey. For example, for variable \textcolor{teal}{LACOLschool}, respondents were asked which LACOL school do you attend. 
+
+Note the command at the top of the chunk, eval=FALSE. This command suppressed the output of \textcolor{teal}{names(ClassSurveyData)} from appearing in the knitted document. Try changing it to eval=TRUE, knit the document, and look at what appears in the knitted document. Keep in mind to set eval=TRUE whenever you need the R output to answer the exercises throughout the lab.
+
+## \textcolor{blue}{Data Types:}
+
+Let us first check out the types of variables in the dataset. We can access the \textcolor{teal}{Sports} variable and the \textcolor{teal}{StatesLived} (each as a single column) of a data frame using the following command.
+
+```{r}
+class(ClassSurveyData$Sports)
+class(ClassSurveyData$StatesLived)
+```
+
+Based on the output, we can tell that the \textcolor{teal}{Sports} variable is a factor variable, in particular, a nominal (no inherent order) categorical variable. We can also tell that the \textcolor{teal}{StatesLived} variable is a numerical variable, in particular, an integer representing counts. 
+
+### \textcolor{blue}{Exercise 1: } Identify the data type of Siblings, FavFood, Sleep, and SpringSemester.
+
+```{r, eval = TRUE}
+#insert the correct commands here (they should not be preceded by a hashtag)
+class(ClassSurveyData$Siblings)
+class(ClassSurveyData$FavFood)
+class(ClassSurveyData$Sleep)
+class(ClassSurveyData$SpringSemester)
+```
+
+### \textcolor{blue}{Answer 1: } (Write your answer in a few words in plain English here.)
+Siblings is represented with integers. 
+FavFood and SpringSemester are factors/nominal categorical variables.
+Sleep is a numeric variable.
+
+### \textcolor{red}{Grade for Exercise 1: /4} 
+### \textcolor{red}{Comments: } 
+
+## \textcolor{blue}{Working with vectors: create, assign, and name a vector}
+
+While you can access a variable of a data frame using \textcolor{teal}{DatasetName\$VariableName}, we can also create a vector of observations with a variable, and work with the vector directly, or multiple vectors at the same time. Creating a vector gives us the flexibility to work with vectors for various purposes.
+
+Let us create a vector for the variable \textcolor{teal}{Siblings} (from the question "How many siblings do you have?"), and name the vector as \textcolor{teal}{SiblingsCount} using the following command.
+
+```{r}
+SiblingsCount <- ClassSurveyData$Siblings
+```
+
+Now we can work directly with this \textcolor{teal}{SiblingsCount} vector. For example, to calculate the average number, the median number, the minimum number, and the maximum number of siblings students have, try
+
+```{r}
+summary(SiblingsCount)
+```
+
+One observation from the output above is that there are 3 NA's, meaning there are three students who did not answer this question. Recall that we can use the \textcolor{teal}{na.rm = TRUE} argument when creating summary statistics, for example:
+
+```{r}
+mean(SiblingsCount, na.rm = TRUE)
+```
+
+If the argument is not used, R will return us NA as the output.
+
+```{r}
+mean(SiblingsCount)
+```
+
+### \textcolor{blue}{Exercise 2: } Create a vector for the variable Sleep (from the question "How many hours do you sleep per night on average?"), and name the vector as SleepHours. What is the number of hours all students get on average?
+
+```{r, eval = TRUE}
+#insert the correct commands here (they should not be preceded by a hashtag)
+SleepHours <- ClassSurveyData$Sleep
+mean(SleepHours)
+```
+
+### \textcolor{blue}{Answer 2: } (Write your answer in a few words in plain English here.)
+
+On average, student respondents get ~7.5 hours of sleep per night.
+
+### \textcolor{red}{Grade for Exercise 2: /5} 
+### \textcolor{red}{Comments: }
+
+## \textcolor{blue}{Working with vectors: arithmetic of two numerical vectors}
+
+In the Class Survey, each student was asked about how many dogs and how many cats one owns. How to find out the number of dogs or cats one owns? You might be guessing that we could do some simple arithmetic by using R as a calculator, and you are indeed on the right track!
+
+One way to do this is to first create one vector from the \textcolor{teal}{Dogs} variable, and another vector from the \textcolor{teal}{Cats} variable. The command below creates and names the two vectors as \textcolor{teal}{DogsCount} and \textcolor{teal}{CatsCount} respectively.
+
+```{r}
+DogsCount <- ClassSurveyData$Dogs
+CatsCount <- ClassSurveyData$Cats
+```
+
+Next, one creates and names the new vector, \textcolor{teal}{DogsCatsCount}, as the sum of these two vectors. This new vector records the number of dogs or cats each student owns.
+
+```{r}
+DogsCatsCount <- DogsCount + CatsCount
+```
+
+To obtain the mean of \textcolor{teal}{DogsCatsCount}:
+```{r}
+mean(DogsCatsCount, na.rm = TRUE)
+```
+
+### \textcolor{blue}{Exercise 3: } Create a new vector to record the difference between DogsCount and CatsCount (i.e. the number of dogs minus the number of cats). What is the maximum difference?
+
+```{r, eval = TRUE}
+#insert the correct commands here (they should not be preceded by a hashtag)
+DogsCount <- ClassSurveyData$Dogs
+CatsCount <- ClassSurveyData$Cats
+DogsMinusCats <- DogsCount - CatsCount
+summary(DogsMinusCats)
+```
+
+### \textcolor{blue}{Answer 3: } (Write your answer in a few words in plain English here.)
+
+The maximum difference between dogs and cats owned by survey respondents is two.
+
+### \textcolor{red}{Grade for Exercise 3: /5} 
+### \textcolor{red}{Comments: }
+
+## \textcolor{blue}{Working with vectors: vector selection}
+
+With vectors created, one can easily access specific element(s) in the vector of one's interests. 
+
+For example, if one wants to know the number of cats the first student owns.
+
+```{r}
+CatsCount[1]
+```
+
+Or, if one wants to find out the average number of cats the first 5 students own.
+
+```{r}
+mean(CatsCount[c(1,2,3,4,5)], na.rm = TRUE)
+# or
+mean(CatsCount[1:5], na.rm = TRUE)
+```
+
+One can select element(s) with more specific criteria. Suppose one wants to find out the average number of cats Vassar students own. To get to this number, one could break down the process into a few steps.
+
+First, find out which responses belong to Vassar students.
+
+```{r}
+Vassar_vector <- (ClassSurveyData$LACOLschool == "Vassar College")
+```
+\textcolor{teal}{Vassar\_vector} is a string of TRUE or FALSE, with TRUE indicating a Vassar student and FALSE indicating a non-Vassar student.
+
+Second, select from \textcolor{teal}{CatsCount} when \textcolor{teal}{Vassar\_vector} is TRUE. \textcolor{teal}{Vassar\_CatsCount} becomes a vector storing the number of cats Vassar students own.
+
+```{r}
+Vassar_CatsCount <- CatsCount[Vassar_vector]
+```
+
+Third, take the average of \textcolor{teal}{Vassar\_CatsCount} to obtain the average number of cats Vassar students own.
+```{r}
+mean(Vassar_CatsCount, na.rm = TRUE)
+```
+
+### \textcolor{blue}{Exercise 4: } What is the average number of dogs Washington and Lee University students own?
+
+
+```{r}
+#insert the correct commands here (they should not be preceded by a hashtag)
+WashLee_vector <- (ClassSurveyData$LACOLschool == "Washington and Lee University")
+WashLee_DogsCount <- DogsCount[WashLee_vector]
+mean(WashLee_DogsCount)
+```
+
+### \textcolor{blue}{Answer 4: } (Write your answer in a few words in plain English here.)
+
+The mean number of dogs owned by Washington and Lee University students is ~0.78.
+
+### \textcolor{red}{Grade for Exercise 4: /5.5} 
+### \textcolor{red}{Comments: }
+
+### \textcolor{blue}{Exercise 5: } Among all students with dogs, what is the average number of cats they own?
+
+
+```{r}
+#insert the correct commands here (they should not be preceded by a hashtag)
+DogOwners_vector <- (ClassSurveyData$Dogs > 0)
+CatsPerDogOwner <- CatsCount[DogOwners_vector]
+mean(CatsPerDogOwner, na.rm = TRUE)
+```
+
+### \textcolor{blue}{Answer 5: } (Write your answer in a few words in plain English here.)
+
+The mean number of cats owned by students who own dogs is ~0.54.
+
+### \textcolor{red}{Grade for Exercise 5: /5.5} 
+### \textcolor{red}{Comments: }
+
+
