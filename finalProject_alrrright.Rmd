@@ -1,0 +1,73 @@
+---
+output:
+  pdf_document: default
+header-includes:
+  - \usepackage{color}
+---
+----
+ Summer 2021: Introduction to Data Science
+---
+
+```{r, echo = F, results = 'hide', message=F, warning = F}
+library(foreign)      #Default package for almost all code, lets your read files into R
+library(ggplot2)      #plotting package
+library(colorspace)   #better colors for ggplot
+library(broom)        #a widely used, but relatively new, package for producing tidier data and tidier output; part of tidyverse
+library(tidyverse)    #a widely used, but relatively new, package for producing tidier data and tidier output
+library(stargazer)    #produces pretty regression tables
+library(knitr)        #helps the knitting process. In particular, it lets the include_graphics command run
+library(gridExtra)    #allows grid.arrange() to produce prettier graphics
+library(GGally)       #for hte correlation matrix at the end ggpairs()
+library(ggridges)
+library(corrr)
+library(scales)
+library(knitr)
+```
+
+# Final Project
+
+### Authors: Dvij Sharma, Ian Davis, & Etame Kandy
+
+## Loading the data
+
+```{r, echo = T, results = 'hide', message=F, warning = F}
+# common import commands include read.csv(), read_xlsx(), load()
+# you can also click on your data from the "Files" tab and select 'import dataset'. Note that the import command will show up in the R console at the bottom left of the screen. Be sure to copy that import command and paste it here, or else your document won't load the relevant data when knitting.
+df_counties <- read.csv("votingDataForMapping.csv")
+```
+
+
+# Hypothesis/Research Questions(s)
+
+We expect to see a positive correlation between increasing numbers of drug overdose deaths, suicides, and switching support from Democratic to Republican presidential candidates. We anticipate this pattern based on the intuition that people who see their community declining (evidenced by increases in deaths of despair) will be fearful of the future and more likely to support maintaining the status quo.
+
+Alternatively, we might see a negative correlation between increasing numbers of drug overdose deaths, suicides, and switching support from Democratic to Republican presidential candidates. This could occur in traditionally Republican areas where living and community conditions are deteriorating (evidenced by increases in deaths of despair), and community residents find it necessary for a change to occur from policymakers to improve their lives. These people might find Democrats the most secure path towards change.
+
+We are more confident with the first theory before visualizing the data.
+
+
+# Data Visualizations
+
+```{r}
+#Change in Number of Suicides & Shift towards Support for Republican Presidential Candidates
+df_counties %>% 
+ggplot(mapping = aes(x = drugChg1980to2014, y = rShift)) +
+                  geom_point() +
+                  geom_smooth()
+    
+#Change in Number of Drug Abuse-Related Deaths & Shift towards Support for Republican Presidential Candidates
+df_counties %>% 
+ggplot(mapping = aes(x = selfChg1980to2014, y = rShift)) +
+    geom_point() +
+    geom_smooth()
+
+#Change in Number of Suicides & Change in Number of Drug Abuse-Related Deaths
+df_counties %>% 
+ggplot(mapping = aes(x = drugChg1980to2014, y = selfChg1980to2014)) +
+    geom_point() +
+    geom_smooth()
+```
+
+According to the scatterplot, there seems to be a positive correlation between deaths related to drug use and suicides. This makes sense since people can use drugs to commit suicide, such as overdosing.
+
+There doesn’ seem to be a strong correlation in any of our first two graphs, that is, between deaths related to suicide and drug use against change from Democrat to Republican. Although there is possibly a very slight positive correlation, which would validate our first theory, it is too small to be reliable.
