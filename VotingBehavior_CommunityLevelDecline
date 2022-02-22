@@ -1,0 +1,464 @@
+---
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes: \usepackage{color}
+---
+----
+ Summer 2021: Introduction to Data Science
+---
+
+```{r, echo = F, results = 'hide', message=F, warning = F}
+library(foreign)      
+library(ggplot2)      
+library(colorspace)   
+library(broom)        
+library(tidyverse)    
+library(stargazer)    
+library(knitr)        
+library(gridExtra)    
+library(GGally)       
+library(ggridges)
+library(corrr)
+library(scales)
+library(knitr)
+library(plotly)
+library(reshape2)
+library(modelr)
+```
+
+# Final Project
+
+### Authors: Ian Davis, Etame Kandy, Dvij Sharma
+
+
+```{r, echo = F, results = 'hide', message=F, warning = F}
+
+load(path.expand(path.expand("~/share/countyData.Rda")))
+cces <- read.csv(file = 'cces2016.csv')
+
+```
+
+# Introduction/Previous Literature
+
+Donald Trump's now globally-recognizable 2016 presidential campaign slogan, "Make America great again" hearkens to a time before 'greatness' was lost. For decades, many communities around the country have seen their well-being eroded by rising rates of suicide and deaths due to substance abuse (so-called 'deaths of despair'). Prior research has shown that counties with higher per capita rates of deaths of despair showed greater increases in election-to-election turnout of supporters of Republican presidential candidates (Monnat, 2016) and, in the United Kingdom, localities with rising rates of suicide and drug-related deaths were found to be more likely to vote in favor of Brexit (Koltai et al., 2020). The popular press, however, often cites changes in individuals' personal economic situations as powerful motivators for greater support for Trump. Some academic literature supports this narrative: Green and McElwee (2019), in their empirical analysis of 2016 Cooperative Congressional Election Study (CCES) data, found that White voters who had recently lost their job were more likely to support Donald Trump in 2016.
+
+# Hypothesis/Research Questions
+
+The following analysis, thus, examines the extent to which personal economic concerns and declines in community health predict changes in voting behavior (specifically, increases in support for conservative Republican presidential candidates). Using CCES individual-level survey data and a compilation of U.S. census, Institute for Health Metrics and Evaluation (IHME), and voting data from the Guardian and Townhall.com by Ella Foster Molina and Ben Warren, we seek to answer the following: to what extent did rising rates of drug and alcohol abuse, suicide, and violence predict Americans' increased support for Donald Trump in 2016 over Mitt Romney in 2012 on the county level? Subsequently, what role did change in individuals' own economic well-being play in shifts of support in favor of Donald Trump among individuals who voted for Barack Obama in 2012? 
+
+H1: We hypothesize that people who see their community declining (evidenced by increases in population decline and deaths of despair rates) will be fearful of the future, more likely to support maintaining the status quo, and, as a result, more likely to show greater enthusiasm for Republican presidential candidates. For this reason, in our examination of the county-level data compiled by Ella Foster Molina and Ben Warren, we expect increasing rates of population decline, substance abuse deaths, and suicides to positively predict increasees in support for the Republican presidential candidate in 2016. Similarly, in our analysis of county-level variables in the CCES dataset, we expect rising rates of unemployment to positively predict individuals voting for Donald Trump in 2016 after having voted for Barack Obama in 2012.
+
+H2: We further hypothesize that declines in one's own economic well-being and recent loss of employment will elicit a similar affinity for the past, make conservative political candidates more appealing, and, subsequently, predict greater likelihood to vote for Donald Trump in 2016 after having voted for Barack Obama in 2012 on the individual level.
+
+# Summary Statistics
+
+For our county data model, these are the following variables we have decided to use:
+
+* rshift represents the percentage difference between the Republican presidential vote in that county in 2016 and 2012. Positive values mean leaning more Republican, while negative values mean leaning less Republican
+* prcntPopChg represents the percent net increase or decrease in the population of the county in 2016
+* drugChg1980to2014 represents the county level percent change in deaths related to drug use from 1980 to 2014
+* alcoholChg1980to2014 represents the county level percent change in deaths related to alcohol abuse from 1980 to 2014
+* selfChg1980to2014 represents the county level percent change in deaths related to suicide from 1980 to 2014
+* violenceChg1980to2014 represents the county level percent change in deaths related to interpersonal violence from 1980 to 2014
+
+For our CCES model, these are the following variables we decided to use:
+
+* vote_shift_trump is a binary variable that represents the shift in the respondent’s support from Barack Obama in 2012 to Donald Trump in 2016. 1 means a shift to Trump while 0 means the opposite
+* personal_econ_worse represents the change in individuals’ economic situations over the past four years. Measured by 0 (meaning it’s increased a lot), 0.25 (meaning it’s increased somewhat), 0.5 (meaning it’s stayed the same), 0.75 (meaning it’s decreased somewhat), and 1 (meaning it’s increased a lot)
+* personal_unemployed is a binary variable that represents whether or not the individual has lost a job over the past four years. 1 means yes, while 0 means no.
+* union_hh_no_was_is represents the change in individuals’ fellow household members’ membership in a union
+* union_no_was_is represents the change in the respondent's membership in a union
+* fb_pchange_00_14 represents the county-level percentage change in number of foreign-born residents, 2000-2014
+* lat_pchange_00_14 represents the county-level percentage change in number of Latinx-born residents, 2000-2014
+* manu_pchange_00_14 represents the county-level percentage change in number of manufacturing jobs, 2000-2014
+* unem_pchange_00_14 represents the county-level percentage change in unemployment, 2000-2014
+
+```{r, eval=TRUE, warning=FALSE, message=FALSE}
+#Descriptive Statistics
+
+#variables for first model
+rshift <- countyData$rShift
+popChg <- countyData$prcntPopChg
+drugChg <- countyData$drugChg1980to2014
+alcoholChg <- countyData$alcoholChg1980to2014
+selfChg <- countyData$selfChg1980to2014
+violenceChg <- countyData$violenceChg1980to2014
+
+#variables for second model
+vote_Trump <- cces$vote_shift_trump
+econ_worse <- cces$personal_econ_worse
+unemployed <- cces$personal_unemployed
+union_household <- cces$union_hh_no_was_is
+union <- cces$union_no_was_is
+foreign_born <- cces$fb_pchange_00_14
+latino <- cces$lat_pchange_00_14
+manufacturing <- cces$manu_change_00_14
+unempChg <- cces$unem_pchange_00_14
+
+#Summary stats
+#model 1
+summary(rshift)
+summary(popChg)
+summary(drugChg)
+summary(alcoholChg)
+summary(selfChg)
+summary(violenceChg)
+
+#model 2
+summary(vote_Trump)
+summary(econ_worse)
+summary(union)
+summary(foreign_born)
+summary(latino)
+summary(manufacturing)
+summary(unempChg)
+summary(unemployed)
+summary(union_household)
+
+#histograms
+#model 1
+s1 <- countyData %>%
+  ggplot(aes(x = rshift)) +
+  geom_histogram(binwidth = 5) + labs(title = "Rshift")
+s2 <- countyData %>%
+  ggplot(aes(x = prcntPopChg)) +
+  geom_histogram(binwidth = 5) + labs(title = "Percent Population Change")
+s3 <- countyData %>%
+  ggplot(aes(x = drugChg1980to2014)) +
+  geom_histogram(binwidth = 5) + labs(title = "Percent Change in Deaths Related to Drug Use")
+s4 <- countyData %>%
+  ggplot(aes(x = selfChg1980to2014)) +
+  geom_histogram(binwidth = 5) + labs(title = "Percent Change in Deaths Related to Suicide")
+s5 <- countyData %>%
+  ggplot(aes(x = violenceChg1980to2014)) +
+  geom_histogram(binwidth = 5) + labs(title = "Percent Change in Deaths Related to Interpersonal Violence")
+
+grid.arrange(s1,s2,s3,s4,s5,nrow=2)
+
+#model 2
+s6 <- cces %>%
+  ggplot(aes(x = vote_shift_trump)) +
+  geom_bar() + labs(title = "Shift in support from Obama (2012) to Trump (2016)")
+s7 <- cces %>%
+  ggplot(aes(x = personal_econ_worse)) +
+  geom_histogram(binwidth = 0.25) + labs(title = "Change in Individuals' Economic Situations over 4 Years")
+s8 <- cces %>%
+  ggplot(aes(x = personal_unemployed)) +
+  geom_bar() + labs(title = "Change in Individuals' Employment Status Situations over 4 Years")
+s9 <- cces %>%
+  ggplot(aes(x = union_hh_no_was_is)) +
+  geom_histogram(binwidth = 1) + labs(title = "Change in Individuals' Household Members' Membership in a Union")
+s10 <- cces %>%
+  ggplot(aes(x = union_no_was_is)) +
+  geom_histogram(binwidth = 1) + labs(title = "Change in Individuals' Membership in a Union")
+s11 <- cces %>%
+  ggplot(aes(x = fb_pchange_00_14)) +
+  geom_histogram(binwidth = 50) + labs(title = "Percentage Change in Number of Foreign-Born Residents")
+s12 <- cces %>%
+  ggplot(aes(x = lat_pchange_00_14)) +
+  geom_histogram(binwidth = 50) + labs(title = "Percentage Change in Number of Latino-Born Residents")
+s13 <- cces %>%
+  ggplot(aes(x = manu_pchange_00_14)) +
+  geom_histogram(binwidth = 5) + labs(title = "Percentage Change in Number of Manufacturing Jobs")
+s14 <- cces %>%
+  ggplot(aes(x = unem_pchange_00_14)) +
+  geom_histogram(binwidth = 10) + labs(title = "Percentage Change in Unemployment")
+
+grid.arrange(s6,s7,s8,s9,s10,nrow = 2)
+grid.arrange(s11,s12,s13,s14,nrow=2)
+
+countyData.cor <- countyData %>% select(popEstimate16, undereducated, anyCollege, prcntDeaths, prcntBirths, prcntWhiteNotLatino, prcntBlack, prcntUnemployed, popChg15, prcntPopChg, internatlMig2016, domesticMig16, medianIncome16, violenceChg1980to2014,
+totalMortality2014, totalSelfMortality2014, alcoholChg1980to2014, selfChg1980to2014, violenceChg1980to2014, rShift)
+
+#Correlation Matrix#######
+cor.tbl2 <- as.matrix(round(cor(countyData.cor, use = "complete.obs"), 2))
+
+get_upper_tri<-function(cor.tbl2){
+  cor.tbl2[lower.tri(cor.tbl2)] <- NA
+  return(cor.tbl2)
+}
+cor.tbl2 <- get_upper_tri(cor.tbl2)
+
+melt.cor.tbl2 <- melt(cor.tbl2)
+
+plot.cor.tbl2 <- ggplot(melt.cor.tbl2, aes(Var1, Var2,
+                                           fill = value, alpha = abs(value)))+
+geom_tile(color = "white")+
+scale_fill_gradient2(high = "#3c00c9", mid = "#ffffff", low = "#c90000",
+                      midpoint = 0, limit = c(-1,1), na.value = "gray90",
+                      space = "Lab", name="Pearson\nCorrelation") +
+                      theme_minimal()+ # minimal theme
+                      theme(axis.text.x = element_text(angle = -60, vjust = 0.2, 
+                                                       size = 10, hjust = 0))+
+                      coord_fixed()+
+                      guides(alpha = "none")
+
+plot.cor.tbl2 + 
+  geom_text(aes(Var1, Var2, label = value,  color = value, alpha = abs(value)),  
+            size = 1, fontface = 2) +
+  scale_color_gradientn(colors = c("black","black", "white", "white"), 
+                        values = c(-0.5, 0.76999, 0.77,1)) +
+  scale_alpha_continuous(range = c(0.2, 1)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.justification = c(0.1, 0),
+    legend.position = c(0.6, 0.1),
+    legend.direction = "horizontal")+
+  guides(alpha = "none",
+         color = "none",
+         fill = guide_colorbar(barwidth = 5, barheight = 1,
+                               title.position = "top", title.hjust = 0.5))
+  
+```
+
+```{r, eval = T, warning=FALSE, message=FALSE}
+countyData2 <- countyData %>% 
+  mutate(log.pop = log(popEstimate16))
+ 
+#3D interactive plot of county-level data
+
+plotDoDShift <-plot_ly(countyData2,
+     x = ~drugChg1980to2014, 
+     y = ~selfChg1980to2014, z = ~alcoholChg1980to2014,
+     text = ~countyState,
+     color = ~rShift, colors = c(
+     'blue', 'skyblue', 'grey99', 'red', 'darkred')) %>%
+    add_markers(size = 5) %>% 
+    colorbar(title = "Increase in Support\nfor Trump") %>%
+    layout(title = "US Counties",
+           scene = list(xaxis = list(title = '% Change in Drug Deaths 1980-2014'),
+                        yaxis = list(title = '% Change in Suicides 1980-2014'),
+                        zaxis = list(title = '% Change in Alcohol-Related\nDeaths 1980-2014')))
+
+htmlwidgets::saveWidget(plotDoDShift, "Unit4-5_plotDoDShift.html")  #save the interactive images as a .html file
+plotDoDShift
+```
+
+# Model(s) for County-Level Data Only
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+y <- countyData$rShift
+x1 <- countyData$prcntPopChg
+x2 <- countyData$drugChg1980to2014
+x3 <- countyData$alcoholChg1980to2014
+x4 <- countyData$selfChg1980to2014
+x5 <- countyData$violenceChg1980to2014
+
+countyDataModel1 <- lm(y~x1+x2+x3+x4+x5)
+tidy(countyDataModel1)
+#Model of Foster Molina & Warren County-Level Data
+#Residual standard error: 4.915 on 3105 degrees of freedom
+#(31 observations deleted due to missingness)
+#Multiple R-squared:  0.2269,	Adjusted R-squared:  0.2257 
+#F-statistic: 182.3 on 5 and 3105 DF,  p-value: < 2.2e-16
+#All predictor variables improve model fit
+
+countyData <- countyData %>% 
+  mutate(log.rshift = log(rShift),
+         log.PopChg = log(prcntPopChg),
+         log.drugChg = log(drugChg1980to2014),
+         log.alcChg = log(alcoholChg1980to2014),
+         log.selfChg = log(selfChg1980to2014),
+         log.violenceChg = log(violenceChg1980to2014),
+         log.drug = log(drug2014),
+         log.alc = log(alcohol2014),
+         log.self = log(self2014),
+         log.violence = log(violence2014)) 
+
+countyDataMod.log1 <- lm(rShift~prcntPopChg+ log.drugChg+alcoholChg1980to2014+selfChg1980to2014+log.violenceChg, data = countyData)
+tidy(countyDataMod.log1)
+#Log-Transformed Model of Foster Molina & Warren County-Level Data
+#Residual standard error: 4.426 on 198 degrees of freedom
+# (2938 observations deleted due to missingness)
+#Multiple R-squared:  0.3268,	Adjusted R-squared:  0.3098 
+#F-statistic: 19.23 on 5 and 198 DF,  p-value: 1.401e-15
+
+#Scatterplot 1:  % Population Change, 2015-2016 & Shift Towards Republican
+plot1 <- ggplot(,aes(x1,y))+
+  geom_point(size=2, alpha = 0.5, color="orange")+
+  #geom_smooth(method="lm") +
+  geom_abline(slope = -0.009828024, intercept = 3.606442006)+
+  labs(x = "% Population Change, 2015-2016",
+       y = "Shift Towards Republican")+
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8))
+        
+#Scatterplot 2:  % Change in Drug-Related Deaths, 1980-2014 & Shift Towards Republican
+plot2 <- ggplot(,aes(x2,y))+
+  geom_point(size=2, alpha = 0.5, color="black")+
+  #geom_smooth(method="lm")+
+  geom_abline(slope = 0.0011096, intercept = 3.606442006, color = "turquoise")+
+  labs(x = "% Change in\nDrug-Related Deaths, 1980-2014",
+       y = "Shift Towards Republican") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8))
+
+#Scatterplot 3: Change in Alcohol-Related Deaths, 1980-2014 & Shift Towards Republican
+plot3 <- ggplot(,aes(x3,y))+
+  geom_point(size=2, alpha = 0.5, color="red")+
+  #geom_smooth(method="lm")+
+   geom_abline(slope = -0.0067899, intercept = 3.606442006)+
+  labs(x = "% Change in\nAlcohol-Related Deaths, 1980-2014",
+       y = "Shift Towards Republican") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8))
+
+#Scatterplot 4: % Change in Suicides, 1980-2014" & Shift Towards Republican
+plot4 <- ggplot(,aes(x4,y))+
+  geom_point(size=2, alpha = 0.5, color="green")+
+  #geom_smooth(method="lm") +
+  geom_abline(slope = 0.0378058, intercept = 3.606442006)+
+  labs(x = "% Change in Suicides, 1980-2014",
+       y = "Shift Towards Republican") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8))
+
+#Scatterplot 5: % Change in Violence, 1980-2014 & Shift Towards Republican
+plot5 <- ggplot(,aes(x5,y))+
+  geom_point(size=2, alpha = 0.5, color="purple")+
+  #geom_smooth(method="lm") +
+  geom_abline(slope = 0.0557533, intercept = 3.606442006)+
+  labs(x = "% Change in Violence, 1980-2014",
+       y = "Shift Towards Republican") +
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=8))
+
+grid.arrange(plot1,plot2,plot3,plot4,plot5,nrow=2)
+```
+Analysis:
+
+Note that a linear model was attempted since both the response and all of the explanatory variables used are continuous. We also attempted log-transforming some of the variables which raised the model's adjusted R2 but also raised the p-values for some predictor variables. We decided that the lower p-values of the model without log-transformed variables indicated better fit. As can be seen from the regression analysis table for the original (non-log transformed) model above, the p-values for ALL slope estimates in this model are very small, all less than 1%. This implies that it is extremely unlikely that the effects of each explanatory variable are purely due to random chance. This lends credibility to the linear model we've described and allows us to reliably analyze the slopes themselves. From our tidied regression analyses, we might make the following conclusions:
+
+* For each additional percentage point of growth in county population in 2016, there was a 0.98% DECREASE in shift towards Republican presidential candidates.
+* For each additional percentage point increase in deaths related to drug use from 1980 to 2014, there was a 0.11% INCREASE in shift towards Republican presidential candidates.
+* For each additional percentage point increase in deaths related to alcohol abuse from 1980 to 2014, there was a 0.68% DECREASE in shift towards Republican presidential candidates.
+* For each additional percentage point increase in deaths related to suicide from 1980 to 2014, there was a 3.8% INCREASE in shift towards Republican presidential candidates.
+* For each additional percentage point increase in deaths related to interpersonal violence from 1980 to 2014, there was a 5.6% INCREASE in shift towards Republican presidential candidates.
+
+As we can see from the results above, the theory that deteriorating living  conditions led to greater increases in support for Republican presidential candidates is partially supported. While higher rates of population decline, deaths related to drug use, deaths related to interpersonal violence, and suicide predicted greater increases in support for Republican presidential candidates, higher rates of deaths due to alcohol abuse did not.
+
+# Model(s) for CCES data
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+cces <- cces %>% mutate(employ_num2 = employ_num)
+cces$employ_num2 <- ifelse(cces$employ_num2 >= 3 , 0, ifelse(cces$employ_num2 < 3, 1, 99))
+
+#Categorical response variable so GLM appropriate
+a <- cces$vote_shift_trump
+b1 <- cces$personal_econ_worse
+b2 <- cces$personal_unemployed
+b3 <- cces$union_hh_no_was_is
+b4 <- cces$union_no_was_is
+b5 <- cces$fb_pchange_00_14
+b6 <- cces$lat_pchange_00_14
+b7 <- cces$manu_pchange_00_14
+b8 <- cces$unem_pchange_00_14
+
+ccesModel <- glm(a~b1+b2+b3+b4+b5+b6+b7+b8, family = binomial)
+tidy(ccesModel)
+# Null deviance: 13902  on 61921  degrees of freedom
+#Residual deviance: 13720  on 61913  degrees of freedom
+#(2678 observations deleted due to missingness)
+#AIC: 13738
+#Number of Fisher Scoring iterations: 6
+
+#Logistic Plot 1: Change In Personal Finances, 2012-2016 & Vote for Trump 
+graph1 <- ggplot(,aes(b1,a))+ 
+geom_jitter(color="red", alpha = 0.3, size = 0.1)+
+labs(x = "Change In Personal\n Finances, 2012-2016", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Logistic Plot 2: Change In Individuals' Employment Status, 2012-2016 & Vote for Trump 
+graph2 <- ggplot(,aes(b2,a))+
+geom_jitter(color="blue", alpha = 0.3, size = 0.1)+
+labs(x = "Change In Individuals' Employment\nStatus, 2012-2016", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Logistic Plot 3: Household Members' Union Membership (Never a Member, Formerly, Currently) & Vote for Trump
+graph3 <- ggplot(,aes(b3,a))+
+geom_jitter(color="orange", alpha = 0.3, size = 0.1)+
+labs(x = "Household Members'\nUnion Membership (Never a Member, Formerly, Currently)", y = "Vote for Trump")+ theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Logistic Plot 4: Respondents' Union Membership (Never a Member, Formerly, Currently) & Vote for Trump 
+graph4 <- ggplot(,aes(b4,a))+
+geom_jitter(color="black", alpha = 0.3, size = 0.1)+
+labs(x = "Respondents'\nUnion Membership (Never a Member, Formerly, Currently)", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Scatterplot 6: % Change In Foreign Born Residents, 2000-2014 & Vote for Trump 
+graph5 <- ggplot(,aes(b5,a))+
+geom_point(color="violet",size=1)+
+geom_smooth(method=glm,method.args = list(family = "binomial")) +
+labs(x = "% Change In Foreign Born\nResidents, 2000-2014", y = "Vote for Trump")+ 
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Scatterplot 7: % Change In Latinx Residents, 2000-2014 & Vote for Trump 
+graph6 <- ggplot(,aes(b6,a))+
+geom_point(color="bisque",size=1)+
+geom_smooth(method=glm,method.args = list(family = "binomial")) +
+labs(x = "% Change In Latinx\nResidents, 2000-2014", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Scatterplot 8: % Change In Manufacturing Jobs, 2000-2014 & Vote for Trump 
+graph7 <- ggplot(,aes(b7,a))+
+geom_point(color="green",size=1)+
+geom_smooth(method=glm,method.args = list(family = "binomial"))+ 
+labs(x = "% Change In Manufacturing\nJobs, 2000-2014", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+#Scatterplot 9: % Change In Unemployment, 2000-2014 & Vote for Trump 
+graph8 <- ggplot(,aes(b8,a))+
+geom_point(color="pink",size=1)+
+geom_smooth(method=glm,method.args = list(family = "binomial"))+ 
+labs(x = "% Change In Unemployment,\n2000-2014", y = "Vote for Trump")+
+theme(axis.text=element_text(size=8),axis.title=element_text(size=8))
+
+grid.arrange(graph1,graph2,graph3,graph4, nrow = 2)
+grid.arrange(graph5,graph6,graph7,graph8,nrow=2)
+```
+
+## Analysis:
+
+Note that we employed a logistic model since the response variable is discrete and numeric. As can be seen from the regression analysis table above, the p-values vary considerably between a~b estimates for each b explanatory variable. Specifically, only 5 of the estimates have p-values less than 1% and so can be reliably considered. These correspond to the following explanatory variables: 
+
+* Change in individuals’ economic situations over the past four years
+* Change in individuals’ fellow household members’ membership in a union
+* Change in the respondent's membership in a union
+* County-level percentage change in number of Latinx-born residents, 2000-2014
+* County-level percentage change in unemployment, 2000-2014.
+
+It is interesting to note that variables such as % change in Latinx-born residents and union membership changes reliably predict a greater likelihood to support Trump, while % change in foreign-born residents and % change in manufacturing jobs likely have no relationship with likelihood to shift towards Trump. This gives a very intriguing insight into which factors (at least among the respondents of this survey) most strongly influenced a shift towards Donald Trump.
+
+From these select factors, using both the graphs produced and the regression estimates from the cleaned-up data, we can draw the following observations:
+
+* Worsening economic situations for individuals predicted greater likelihood to support Trump after having supported Obama
+* Union membership (individual or within household) predicted lower likelihood to support Trump after having supported Obama
+* An increase in percentage of Latinx residents predicted greater likelihood to support Trump after having supported Obama
+* An increase in county-level unemployment predicted greater likelihood to support Trump after having supported Obama
+
+Once again, the theory that deteriorating living conditions on the community level leads to greater likelihood to support Republican presidential candidates holds water as seen in the relationships between county-level employment and likelihood to vote for Donald Trump after having voted for Barack Obama. Rather unsettlingly, however, the positive relationship between increases in Latinx populations and support for Trump suggests that some respondents view increasing Latinx populations as part of the decline of their community. This is necessary to recognize as racism and deserves more attention as part of the fight against racism in the US.
+Interestingly, however, while declines in individual economic situations do predict greater likelihood to support Trump after having supported Obama, job loss does not. Further examination of this finding is warranted (particularly whether heterogeneous effects may be evident upon further analysis).
+
+## Conclusion:
+
+In conclusion, there does seem to be a relationship between increases in support for Trump and higher rates of population decline, deaths due to suicide, deaths due to drug use, and deaths due to violence on the county level. It is important to note, however, that higher rates of deaths due to alcohol abuse actually predicted less growth in turn-out for Republican presidential candidates.
+Furthermore, we were able to see that there is a relationship between a greater likelihood to support Trump after having supported Barack Obama and greater declines in one’s personal economic situation. This was not the case for one's own employment status, however, thus our second hypothesis was only partially supported.
+
+Our model only includes a few factors that would cause a community to decline, and thus it would be beneficial if we could add more negative factors. For instance, data on crime rates would help strengthen our argument. High crime rates would demonstrate that a community is deteriorating, and thus we could see if this would incentivize individuals to shift their support to the Republican party. In addition, rather than examining heterogeneous effects of race, gender, or geographic location, our model bunches them together. Separating by race would improve our results since it would allow us to see what demographic is more likely to shift their support to the Republican party when their community is struggling.
+
+
+## References
+
+1.Green, J., & McElwee, S. (2019). The Differential Effects of Economic Conditions and Racial Attitudes in the Election of Donald Trump. Perspectives on Politics, 17(2), 358–379. https://doi.org/10.1017/S1537592718003365 
+
+2. Koltai, J., PhD., Varchetta, F. M., M.Sc, McKee, Martin,M.D., D.Sc, & Stuckler, D., PhD. (2020). Deaths of Despair and Brexit Votes: Cross-Local Authority Statistical Analysis in England and Wales. American Journal of Public Health, 110(3), 401-406. http://dx.doi.org/10.2105/AJPH.2019.305488
+
+3. Monnat, S. M. (2016). Deaths of Despair and Support for Trump in the 2016 Presidential Election. The Pennsylvania State University. https://smmonnat.expressions.syr.edu/wp-content/uploads/ElectionBrief_DeathsofDespair.pdf
+
